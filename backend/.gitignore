@@ -1,0 +1,16 @@
+# Dependencies
+venv/
+__pycache__/
+*.pyc
+
+# Database
+*.db
+instance/
+
+# Environment
+.env
+
+# IDE
+.idea/
+.vscode/
+.DS_Store
