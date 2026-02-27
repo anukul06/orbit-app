@@ -10,6 +10,7 @@ import Roadmap from './pages/Roadmap';
 import Tasks from './pages/Tasks';
 import Insights from './pages/Insights';
 import Profile from './pages/Profile';
+import ChatWidget from './components/ChatWidget';
 
 export default function App() {
     return (
@@ -27,6 +28,7 @@ export default function App() {
                 <Route path="/insights" element={<Insights />} />
                 <Route path="/profile" element={<Profile />} />
             </Routes>
+            <ChatWidget />
         </Router>
     );
 }

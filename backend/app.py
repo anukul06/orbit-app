@@ -13,6 +13,7 @@ from routes.auth_routes import auth_bp
 from routes.dashboard_routes import dashboard_bp
 from routes.roadmap_routes import roadmap_bp
 from routes.task_routes import task_bp
+from routes.chat_routes import chat_bp
 
 
 def create_app():
@@ -28,6 +29,7 @@ def create_app():
     app.register_blueprint(dashboard_bp, url_prefix="/api/dashboard")
     app.register_blueprint(roadmap_bp, url_prefix="/api/roadmap")
     app.register_blueprint(task_bp, url_prefix="/api/tasks")
+    app.register_blueprint(chat_bp, url_prefix="/api/chat")
 
     # Initialize database on startup
     init_db()
