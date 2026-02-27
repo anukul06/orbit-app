@@ -1,167 +1,121 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../api';
 
-const roadmap = [
-    {
-        week: 1,
-        title: 'Foundations & Setup',
-        topics: [
-            'Introduction to AI concepts',
-            'Python fundamentals review',
-            'Set up development environment',
-            'Linear algebra refresher',
-        ],
-        project: 'Hello AI: Build a simple chatbot',
-        status: 'completed',
-    },
-    {
-        week: 2,
-        title: 'Data & Algorithms',
-        topics: [
-            'NumPy & Pandas deep dive',
-            'Data preprocessing techniques',
-            'Search algorithms overview',
-            'Probability & statistics basics',
-        ],
-        project: 'Data Wrangling: Clean & analyze a dataset',
-        status: 'in-progress',
-    },
-    {
-        week: 3,
-        title: 'Machine Learning Core',
-        topics: [
-            'Supervised learning concepts',
-            'Build a regression model',
-            'Classification algorithms',
-            'Model evaluation metrics',
-        ],
-        project: 'Predictor: Housing price prediction model',
-        status: 'upcoming',
-    },
-    {
-        week: 4,
-        title: 'Neural Networks & Beyond',
-        topics: [
-            'Neural network fundamentals',
-            'Build a neural net from scratch',
-            'Intro to TensorFlow/PyTorch',
-            'Capstone project planning',
-        ],
-        project: 'Image Classifier: CNN-based recognition system',
-        status: 'upcoming',
-    },
-];
+const statusColors = {
+    completed: { bg: 'rgba(0,230,118,0.1)', border: 'rgba(0,230,118,0.3)', text: '#00e676' },
+    'in-progress': { bg: 'rgba(108,99,255,0.1)', border: 'rgba(108,99,255,0.3)', text: '#6c63ff' },
+    upcoming: { bg: 'rgba(255,255,255,0.03)', border: 'var(--border-glass)', text: 'var(--text-muted)' },
+};
 
 export default function Roadmap() {
-    const completedWeeks = roadmap.filter(w => w.status === 'completed').length;
-    const overallProgress = Math.round((completedWeeks / roadmap.length) * 100);
+    const navigate = useNavigate();
+    const [roadmap, setRoadmap] = useState([]);
+    const [field, setField] = useState('');
+    const [substream, setSubstream] = useState('');
+    const [progress, setProgress] = useState(0);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        api.getRoadmap()
+            .then(data => {
+                setRoadmap(data.roadmap || []);
+                setField(data.field || '');
+                setSubstream(data.substream || '');
+                setProgress(data.progress || 0);
+            })
+            .catch(() => navigate('/login'))
+            .finally(() => setLoading(false));
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="page-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <p style={{ color: 'var(--text-muted)' }}>Loading roadmap...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="page-wrapper">
             <div className="bg-grid" />
-            <div className="page-container" style={{ paddingTop: 40, paddingBottom: 60 }}>
-                {/* Header */}
+            <div className="page-container" style={{ paddingTop: 40, paddingBottom: 60, maxWidth: 900, margin: '0 auto' }}>
                 <div style={{ marginBottom: 32 }}>
-                    <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 8,
-                        padding: '6px 14px',
-                        background: 'rgba(108, 99, 255, 0.1)',
-                        border: '1px solid rgba(108, 99, 255, 0.2)',
-                        borderRadius: 'var(--radius-full)',
-                        fontSize: '0.82rem', color: 'var(--accent-primary)', fontWeight: 500,
-                        marginBottom: 12
-                    }}>
-                        🤖 Artificial Intelligence
-                    </div>
-                    <h2 style={{ marginBottom: 4 }}>Learning <span className="gradient-text">Roadmap</span></h2>
-                    <p style={{ color: 'var(--text-secondary)' }}>Your 4-week structured learning plan</p>
+                    <h2 style={{ marginBottom: 8 }}>Your <span className="gradient-text">Roadmap</span></h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        {field && substream ? `${field} · ${substream}` : 'Complete your profile to generate a roadmap'}
+                    </p>
                 </div>
 
-                {/* Overall Progress */}
-                <div className="glass-card" style={{
-                    padding: '20px 28px', marginBottom: 32,
-                    display: 'flex', alignItems: 'center', gap: 24,
-                }}>
-                    <span style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                        Overall Progress
-                    </span>
-                    <div className="progress-bar" style={{ flex: 1, height: 12, borderRadius: 6 }}>
-                        <div className="progress-bar-fill" style={{ width: `${overallProgress}%`, borderRadius: 6 }} />
+                {/* Progress bar */}
+                <div className="glass-card" style={{ padding: 20, marginBottom: 32 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Overall Progress</span>
+                        <span className="gradient-text" style={{ fontWeight: 700 }}>{progress}%</span>
                     </div>
-                    <span className="gradient-text" style={{ fontWeight: 700, fontSize: '1.1rem' }}>
-                        {overallProgress}%
-                    </span>
+                    <div className="progress-bar" style={{ height: 8 }}>
+                        <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
+                    </div>
                 </div>
 
-                {/* Weekly Milestones */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                    {roadmap.map((week, wi) => {
-                        const statusColor = week.status === 'completed' ? 'var(--accent-success)' :
-                            week.status === 'in-progress' ? 'var(--accent-primary)' : 'var(--text-muted)';
-                        const statusLabel = week.status === 'completed' ? 'Completed' :
-                            week.status === 'in-progress' ? 'In Progress' : 'Upcoming';
-
-                        return (
-                            <div key={wi} className="glass-card" style={{ padding: 28 }}>
-                                <div style={{
-                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                    marginBottom: 20,
+                {roadmap.length === 0 ? (
+                    <div className="glass-card" style={{ padding: 40, textAlign: 'center' }}>
+                        <p style={{ color: 'var(--text-muted)' }}>No roadmap yet. Complete your profile to generate one.</p>
+                        <button className="btn btn-primary" onClick={() => navigate('/complete-profile')} style={{ marginTop: 16 }}>
+                            Complete Profile →
+                        </button>
+                    </div>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                        {roadmap.map((week, i) => {
+                            const sc = statusColors[week.status] || statusColors.upcoming;
+                            return (
+                                <div key={i} className="glass-card" style={{
+                                    padding: 28,
+                                    borderLeft: `4px solid ${sc.text}`,
+                                    background: sc.bg,
                                 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                        <div style={{
-                                            width: 44, height: 44, borderRadius: 'var(--radius-md)',
-                                            background: week.status === 'completed' ? 'rgba(0,230,118,0.12)' :
-                                                week.status === 'in-progress' ? 'rgba(108,99,255,0.12)' : 'rgba(255,255,255,0.04)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontWeight: 700, fontSize: '1rem', color: statusColor,
-                                            border: `1px solid ${statusColor}30`,
-                                        }}>
-                                            {week.status === 'completed' ? '✓' : `W${week.week}`}
-                                        </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
                                         <div>
-                                            <h3 style={{ fontSize: '1.1rem', marginBottom: 2 }}>Week {week.week}: {week.title}</h3>
-                                            <span style={{ fontSize: '0.82rem', color: statusColor, fontWeight: 600 }}>
-                                                {statusLabel}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Topics */}
-                                <div style={{
-                                    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px',
-                                    marginBottom: 18, paddingLeft: 4,
-                                }}>
-                                    {week.topics.map((topic, ti) => (
-                                        <div key={ti} style={{
-                                            display: 'flex', alignItems: 'center', gap: 10,
-                                            fontSize: '0.92rem', color: 'var(--text-secondary)',
-                                        }}>
                                             <span style={{
-                                                width: 6, height: 6, borderRadius: '50%',
-                                                background: statusColor, flexShrink: 0, opacity: 0.7,
-                                            }} />
-                                            {topic}
+                                                fontSize: '0.72rem', fontWeight: 600, textTransform: 'uppercase',
+                                                color: sc.text, letterSpacing: '0.05em',
+                                            }}>Week {week.week}</span>
+                                            <h3 style={{ marginTop: 4, fontSize: '1.1rem' }}>{week.title}</h3>
                                         </div>
-                                    ))}
-                                </div>
+                                        <span style={{
+                                            padding: '4px 12px', borderRadius: 'var(--radius-full)',
+                                            fontSize: '0.75rem', fontWeight: 600, color: sc.text,
+                                            background: sc.bg, border: `1px solid ${sc.border}`,
+                                        }}>{week.status}</span>
+                                    </div>
 
-                                {/* Mini-project */}
-                                <div style={{
-                                    display: 'flex', alignItems: 'center', gap: 10,
-                                    padding: '12px 16px',
-                                    background: 'rgba(255, 171, 64, 0.06)',
-                                    border: '1px solid rgba(255, 171, 64, 0.12)',
-                                    borderRadius: 'var(--radius-sm)',
-                                    fontSize: '0.88rem',
-                                }}>
-                                    <span>🏆</span>
-                                    <span style={{ color: 'var(--accent-warning)', fontWeight: 600 }}>Mini-Project:</span>
-                                    <span style={{ color: 'var(--text-secondary)' }}>{week.project}</span>
+                                    <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+                                        {(week.topics || []).map((topic, j) => (
+                                            <li key={j} style={{
+                                                display: 'flex', alignItems: 'center', gap: 10,
+                                                color: 'var(--text-secondary)', fontSize: '0.9rem',
+                                            }}>
+                                                <span style={{ color: sc.text, fontSize: '0.7rem' }}>●</span>
+                                                {topic}
+                                            </li>
+                                        ))}
+                                    </ul>
+
+                                    {week.project && (
+                                        <div style={{
+                                            padding: '10px 14px', borderRadius: 'var(--radius-md)',
+                                            background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)',
+                                            fontSize: '0.85rem', color: 'var(--text-secondary)',
+                                        }}>
+                                            🎯 <strong>Project:</strong> {week.project}
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

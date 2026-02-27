@@ -1,11 +1,10 @@
 """
 ORBIT — Chat Routes
-AI-powered chatbot using OpenAI API for career guidance.
+AI-powered chatbot using Groq (Llama3-70b) for career guidance.
 """
 
 from flask import Blueprint, request, jsonify, session
 import os
-import json
 
 chat_bp = Blueprint("chat", __name__)
 
@@ -44,16 +43,16 @@ def build_user_context():
 
 @chat_bp.route("/", methods=["POST"])
 def chat():
-    """Send a message to the AI chatbot."""
+    """Send a message to the AI chatbot via Groq (Llama3-70b)."""
     data = request.get_json()
     message = (data or {}).get("message", "").strip()
 
     if not message:
         return jsonify({"error": "Message is required"}), 400
 
-    api_key = os.getenv("OPENAI_API_KEY", "")
+    api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
-        return jsonify({"error": "OpenAI API key not configured"}), 500
+        return jsonify({"error": "Groq API key not configured. Set GROQ_API_KEY in .env"}), 500
 
     # Build conversation with history
     chat_history = session.get("chat_history", [])
@@ -62,7 +61,6 @@ def chat():
     system_content = SYSTEM_PROMPT + build_user_context()
 
     messages = [{"role": "system", "content": system_content}]
-    # Include last 5 messages for context
     for msg in chat_history[-10:]:
         messages.append(msg)
     messages.append({"role": "user", "content": message})
@@ -70,13 +68,13 @@ def chat():
     try:
         import httpx
         response = httpx.post(
-            "https://api.openai.com/v1/chat/completions",
+            "https://api.groq.com/openai/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
             },
             json={
-                "model": "gpt-4o",
+                "model": "llama3-70b-8192",
                 "messages": messages,
                 "max_tokens": 500,
                 "temperature": 0.7,
@@ -93,7 +91,6 @@ def chat():
         # Save to session history
         chat_history.append({"role": "user", "content": message})
         chat_history.append({"role": "assistant", "content": reply})
-        # Keep last 10 messages only
         session["chat_history"] = chat_history[-10:]
 
         return jsonify({"reply": reply}), 200
