@@ -67,8 +67,8 @@ export default function Dashboard() {
                             fontSize: '1.3rem',
                         }}>🗺️</div>
                         <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2 }}>View Roadmap</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>4-week learning plan</div>
+                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2, color: '#F3F4F6' }}>View Roadmap</div>
+                            <div style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>4-week learning plan</div>
                         </div>
                     </button>
                     <button className="glass-card" onClick={() => navigate('/tasks')}
@@ -79,8 +79,8 @@ export default function Dashboard() {
                             fontSize: '1.3rem',
                         }}>✅</div>
                         <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2 }}>View Tasks</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Daily to-do list</div>
+                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2, color: '#F3F4F6' }}>View Tasks</div>
+                            <div style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>Daily to-do list</div>
                         </div>
                     </button>
                     <button className="glass-card" onClick={() => navigate('/insights')}
@@ -91,8 +91,8 @@ export default function Dashboard() {
                             fontSize: '1.3rem',
                         }}>📊</div>
                         <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2 }}>Complete Reflection</div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Weekly insights</div>
+                            <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 2, color: '#F3F4F6' }}>Complete Reflection</div>
+                            <div style={{ fontSize: '0.8rem', color: '#9CA3AF' }}>Weekly insights</div>
                         </div>
                     </button>
                 </div>

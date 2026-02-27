@@ -12,13 +12,13 @@
 }
 
 :root {
-  /* Core palette — dark mode defaults */
-  --bg-primary: #111827;
+  /* Core palette */
+  --bg-primary: #06080f;
   --bg-secondary: #0d1117;
-  --bg-card: rgba(31, 41, 55, 0.85);
-  --bg-card-hover: rgba(42, 52, 65, 0.95);
-  --bg-glass: rgba(255, 255, 255, 0.04);
-  --bg-glass-hover: rgba(255, 255, 255, 0.08);
+  --bg-card: rgba(15, 20, 40, 0.7);
+  --bg-card-hover: rgba(25, 32, 65, 0.85);
+  --bg-glass: rgba(255, 255, 255, 0.03);
+  --bg-glass-hover: rgba(255, 255, 255, 0.06);
 
   /* Accent colors */
   --accent-primary: #6c63ff;
@@ -35,7 +35,7 @@
   --gradient-card: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
   --gradient-glow: radial-gradient(ellipse at center, rgba(108, 99, 255, 0.15) 0%, transparent 70%);
 
-  /* Text — high contrast for dark mode */
+  /* Text */
   --text-primary: #F9FAFB;
   --text-secondary: #9CA3AF;
   --text-muted: #6B7280;
