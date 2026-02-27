@@ -2,18 +2,45 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 
-const fields = ['Computer Science', 'Civil Engineering', 'Medical', 'Commerce', 'Arts'];
-
-const substreamMap = {
-    'Computer Science': ['AI', 'Data Science', 'Machine Learning', 'Web Development', 'Cybersecurity'],
-    'Civil Engineering': ['Structural', 'Environmental', 'Transportation', 'Geotechnical', 'Urban Planning'],
-    'Medical': ['General Medicine', 'Surgery', 'Pharmacy', 'Biotechnology', 'Nursing'],
-    'Commerce': ['Accounting', 'Finance', 'Marketing', 'Economics', 'Business Analytics'],
-    'Arts': ['Design', 'Literature', 'Media', 'Performing Arts', 'Humanities'],
+const degreeMap = {
+    'B.Tech': {
+        'Computer Science': ['Data Science', 'Artificial Intelligence', 'Machine Learning', 'Web Development', 'Cybersecurity'],
+        'Civil Engineering': ['Structural Engineering', 'Geotechnical', 'Environmental Engineering', 'Transportation', 'Urban Planning'],
+        'Mechanical Engineering': ['Thermodynamics', 'Robotics', 'Automobile', 'Manufacturing', 'Aerospace'],
+        'Electrical Engineering': ['Power Systems', 'Electronics', 'Signal Processing', 'VLSI', 'Control Systems'],
+    },
+    'MBBS': {
+        'Clinical Medicine': ['Cardiology', 'Neurology', 'Pediatrics', 'Dermatology', 'Psychiatry'],
+        'Surgery': ['General Surgery', 'Orthopedics', 'Neurosurgery', 'ENT', 'Ophthalmology'],
+        'Diagnostics': ['Radiology', 'Pathology', 'Microbiology', 'Biochemistry', 'Forensic Medicine'],
+    },
+    'B.Com': {
+        'Finance': ['Investment Banking', 'Corporate Finance', 'Risk Management', 'Financial Planning'],
+        'Accounting': ['Taxation', 'Auditing', 'Cost Accounting', 'Financial Reporting'],
+        'Marketing': ['Digital Marketing', 'Brand Management', 'Market Research', 'Advertising'],
+    },
+    'B.A': {
+        'Economics': ['Behavioral Economics', 'Econometrics', 'International Trade', 'Public Finance'],
+        'Psychology': ['Clinical Psychology', 'Cognitive Science', 'Organizational Behavior', 'Counseling'],
+        'Political Science': ['Public Policy', 'International Relations', 'Governance', 'Constitutional Law'],
+    },
+    'B.Sc': {
+        'Physics': ['Quantum Mechanics', 'Astrophysics', 'Optics', 'Nuclear Physics'],
+        'Mathematics': ['Applied Math', 'Statistics', 'Algebra', 'Computational Math'],
+        'Biology': ['Genetics', 'Ecology', 'Microbiology', 'Biotechnology'],
+    },
+    'BBA': {
+        'Management': ['Operations', 'Strategic Management', 'Supply Chain', 'Project Management'],
+        'Entrepreneurship': ['Startup Management', 'Venture Capital', 'Innovation', 'Social Enterprise'],
+        'HR': ['Talent Management', 'Organizational Development', 'Labor Relations', 'Compensation'],
+    },
+    'Other': {
+        'General': ['Research', 'Interdisciplinary Studies', 'Liberal Arts', 'Professional Development'],
+    },
 };
 
 const skillLevels = ['Beginner', 'Intermediate', 'Advanced'];
-const degreeTypes = ['B.Tech', 'B.Sc', 'B.Com', 'B.A', 'MBBS', 'BBA', 'Other'];
+const degreeTypes = Object.keys(degreeMap);
 
 export default function CompleteProfile() {
     const navigate = useNavigate();
@@ -27,10 +54,14 @@ export default function CompleteProfile() {
     const update = (key, val) => {
         setForm(prev => {
             const next = { ...prev, [key]: val };
-            if (key === 'field') next.substream = '';
+            if (key === 'degree') { next.field = ''; next.substream = ''; }
+            if (key === 'field') { next.substream = ''; }
             return next;
         });
     };
+
+    const currentFields = form.degree ? Object.keys(degreeMap[form.degree] || {}) : [];
+    const currentSubstreams = (form.degree && form.field) ? (degreeMap[form.degree]?.[form.field] || []) : [];
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -96,17 +127,18 @@ export default function CompleteProfile() {
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
                             <div>
                                 <label className="input-label">Field of Study</label>
-                                <select className="input-field" value={form.field} onChange={e => update('field', e.target.value)} id="field-input">
-                                    <option value="">Select Field</option>
-                                    {fields.map(f => <option key={f} value={f}>{f}</option>)}
+                                <select className="input-field" value={form.field} onChange={e => update('field', e.target.value)}
+                                    id="field-input" disabled={!form.degree}>
+                                    <option value="">{form.degree ? 'Select Field' : 'Select degree first'}</option>
+                                    {currentFields.map(f => <option key={f} value={f}>{f}</option>)}
                                 </select>
                             </div>
                             <div>
                                 <label className="input-label">Substream</label>
                                 <select className="input-field" value={form.substream} onChange={e => update('substream', e.target.value)}
                                     id="substream-input" disabled={!form.field}>
-                                    <option value="">Select Substream</option>
-                                    {(substreamMap[form.field] || []).map(s => <option key={s} value={s}>{s}</option>)}
+                                    <option value="">{form.field ? 'Select Substream' : 'Select field first'}</option>
+                                    {currentSubstreams.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
                             </div>
                             <div>
