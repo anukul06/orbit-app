@@ -14,6 +14,8 @@ from routes.dashboard_routes import dashboard_bp
 from routes.roadmap_routes import roadmap_bp
 from routes.task_routes import task_bp
 from routes.chat_routes import chat_bp
+from routes.settings_routes import settings_bp
+from routes.community_routes import community_bp
 
 
 def create_app():
@@ -30,6 +32,8 @@ def create_app():
     app.register_blueprint(roadmap_bp, url_prefix="/api/roadmap")
     app.register_blueprint(task_bp, url_prefix="/api/tasks")
     app.register_blueprint(chat_bp, url_prefix="/api/chat")
+    app.register_blueprint(settings_bp, url_prefix="/api/settings")
+    app.register_blueprint(community_bp, url_prefix="/api/community")
 
     # Initialize database on startup
     init_db()

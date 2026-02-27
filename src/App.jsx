@@ -10,6 +10,9 @@ import Roadmap from './pages/Roadmap';
 import Tasks from './pages/Tasks';
 import Insights from './pages/Insights';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
+import Community from './pages/Community';
+import SkillProgress from './pages/SkillProgress';
 import ChatWidget from './components/ChatWidget';
 
 export default function App() {
@@ -27,6 +30,9 @@ export default function App() {
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/insights" element={<Insights />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/skill-progress" element={<SkillProgress />} />
             </Routes>
             <ChatWidget />
         </Router>

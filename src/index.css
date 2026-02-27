@@ -3,6 +3,14 @@
    ============================================ */
 
 /* ---------- CSS Custom Properties ---------- */
+
+/* Smooth theme transition */
+*,
+*::before,
+*::after {
+  transition: background-color 0.3s ease, color 0.15s ease, border-color 0.3s ease;
+}
+
 :root {
   /* Core palette */
   --bg-primary: #06080f;
@@ -72,7 +80,57 @@
   --transition-spring: 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ---------- Reset & Base ---------- */
+/* ---------- Light Theme ---------- */
+[data-theme="light"] {
+  --bg-primary: #f5f7fb;
+  --bg-secondary: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.9);
+  --bg-card-hover: rgba(240, 242, 250, 0.95);
+  --bg-glass: rgba(0, 0, 0, 0.02);
+  --bg-glass-hover: rgba(0, 0, 0, 0.04);
+  --text-primary: #1a1a2e;
+  --text-secondary: #4a5068;
+  --text-muted: #8890a4;
+  --border-subtle: rgba(108, 99, 255, 0.12);
+  --border-glass: rgba(0, 0, 0, 0.08);
+  --border-accent: rgba(108, 99, 255, 0.3);
+  --gradient-dark: linear-gradient(180deg, #f5f7fb 0%, #eef0f8 100%);
+  --gradient-card: linear-gradient(135deg, rgba(108, 99, 255, 0.06) 0%, rgba(0, 212, 255, 0.03) 100%);
+  --gradient-glow: radial-gradient(ellipse at center, rgba(108, 99, 255, 0.06) 0%, transparent 70%);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 30px rgba(108, 99, 255, 0.08);
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+[data-theme="light"] .input-field,
+[data-theme="light"] select.input-field {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .progress-bar {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .bg-grid {
+  opacity: 0.3;
+}
+
+
 *,
 *::before,
 *::after {
