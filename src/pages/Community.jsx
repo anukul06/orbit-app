@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 
@@ -14,7 +14,29 @@ export default function Community() {
     const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState('');
     const [loading, setLoading] = useState(true);
+    const filterRef = useRef(filter);
+    const expandedRef = useRef(null);
 
+    // Keep refs in sync for polling callbacks
+    useEffect(() => { filterRef.current = filter; }, [filter]);
+    useEffect(() => { expandedRef.current = expandedPost; }, [expandedPost]);
+
+    // Initial load + polling every 4 seconds
+    useEffect(() => {
+        loadPosts();
+        const interval = setInterval(() => {
+            silentLoadPosts();
+            // Also refresh comments if a post is expanded
+            if (expandedRef.current) {
+                api.getPostComments(expandedRef.current)
+                    .then(data => setComments(data.comments || []))
+                    .catch(() => { });
+            }
+        }, 4000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Reload when filter changes
     useEffect(() => { loadPosts(); }, [filter]);
 
     const loadPosts = async () => {
@@ -25,12 +47,20 @@ export default function Community() {
         finally { setLoading(false); }
     };
 
+    // Silent reload — no loading state, no redirect on error
+    const silentLoadPosts = async () => {
+        try {
+            const data = await api.getCommunityPosts(filterRef.current);
+            setPosts(data.posts || []);
+        } catch { }
+    };
+
     const createPost = async () => {
         if (!newPost.title.trim()) return;
         await api.createCommunityPost(newPost);
         setShowCreate(false);
         setNewPost({ title: '', content: '' });
-        loadPosts();
+        loadPosts(); // Instant update after creation
     };
 
     const toggleLike = async (postId) => {
@@ -39,6 +69,11 @@ export default function Community() {
     };
 
     const openComments = async (postId) => {
+        if (expandedPost === postId) {
+            setExpandedPost(null); // Toggle collapse
+            setComments([]);
+            return;
+        }
         setExpandedPost(postId);
         const data = await api.getPostComments(postId);
         setComments(data.comments || []);
@@ -48,9 +83,11 @@ export default function Community() {
         if (!newComment.trim() || !expandedPost) return;
         await api.addPostComment(expandedPost, newComment);
         setNewComment('');
+        // Immediately refresh comments
         const data = await api.getPostComments(expandedPost);
         setComments(data.comments || []);
-        setPosts(prev => prev.map(p => p.id === expandedPost ? { ...p, comments_count: (p.comments_count || 0) + 1 } : p));
+        // Update comment count on post
+        setPosts(prev => prev.map(p => p.id === expandedPost ? { ...p, comments_count: data.comments.length } : p));
     };
 
     const timeAgo = (ts) => {
@@ -87,7 +124,7 @@ export default function Community() {
                     ))}
                 </div>
 
-                {/* Create Post Modal */}
+                {/* Create Post */}
                 {showCreate && (
                     <div className="glass-card" style={{ padding: 24, marginBottom: 20, border: '1px solid var(--border-accent)' }}>
                         <input type="text" className="input-field" placeholder="Post title..." value={newPost.title}
@@ -113,6 +150,7 @@ export default function Community() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                         {posts.map(post => (
                             <div key={post.id} className="glass-card" style={{ padding: 20 }}>
+                                {/* Post Header */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                                     <div style={{
                                         width: 36, height: 36, borderRadius: '50%', background: 'var(--gradient-primary)',
@@ -120,8 +158,8 @@ export default function Community() {
                                         fontSize: '0.85rem', fontWeight: 700, color: 'white',
                                     }}>{(post.author || 'U')[0].toUpperCase()}</div>
                                     <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{post.author}</div>
-                                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{timeAgo(post.created_at)}</div>
+                                        <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#F3F4F6' }}>{post.author}</div>
+                                        <div style={{ fontSize: '0.75rem', color: '#9CA3AF' }}>{timeAgo(post.created_at)}</div>
                                     </div>
                                     {post.field && (
                                         <span style={{
@@ -131,41 +169,61 @@ export default function Community() {
                                     )}
                                 </div>
 
-                                <h3 style={{ fontSize: '1.05rem', marginBottom: 6 }}>{post.title}</h3>
-                                {post.content && <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 14 }}>{post.content}</p>}
+                                {/* Post Body */}
+                                <h3 style={{ fontSize: '1.05rem', marginBottom: 6, color: '#F9FAFB' }}>{post.title}</h3>
+                                {post.content && <p style={{ color: '#D1D5DB', fontSize: '0.9rem', lineHeight: 1.6, marginBottom: 14 }}>{post.content}</p>}
 
+                                {/* Actions */}
                                 <div style={{ display: 'flex', gap: 16, borderTop: '1px solid var(--border-glass)', paddingTop: 12 }}>
                                     <button onClick={() => toggleLike(post.id)} style={{
                                         background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                                        color: post.liked ? '#ff6b9d' : 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500,
+                                        color: post.liked ? '#ff6b9d' : '#9CA3AF', fontSize: '0.85rem', fontWeight: 500,
                                     }}>{post.liked ? '❤️' : '🤍'} {post.likes}</button>
                                     <button onClick={() => openComments(post.id)} style={{
                                         background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                                        color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500,
-                                    }}>💬 {post.comments_count || 0}</button>
+                                        color: expandedPost === post.id ? 'var(--accent-primary)' : '#9CA3AF', fontSize: '0.85rem', fontWeight: 500,
+                                    }}>💬 {post.comments_count || 0} Comment{(post.comments_count || 0) !== 1 ? 's' : ''}</button>
                                 </div>
 
-                                {/* Comments */}
+                                {/* Comments Section */}
                                 {expandedPost === post.id && (
                                     <div style={{ marginTop: 14, borderTop: '1px solid var(--border-glass)', paddingTop: 14 }}>
-                                        {comments.map(c => (
-                                            <div key={c.id} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-                                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'rgba(108,99,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                                                    {(c.author || 'U')[0].toUpperCase()}
+                                        {comments.length === 0 ? (
+                                            <p style={{ fontSize: '0.82rem', color: '#6B7280', marginBottom: 12 }}>No comments yet. Be the first!</p>
+                                        ) : (
+                                            comments.map(c => (
+                                                <div key={c.id} style={{
+                                                    display: 'flex', gap: 10, marginBottom: 12,
+                                                    padding: '10px 12px', borderRadius: 'var(--radius-md)',
+                                                    background: 'rgba(255,255,255,0.02)', marginLeft: 8,
+                                                }}>
+                                                    <div style={{
+                                                        width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                                                        background: 'rgba(108,99,255,0.2)', display: 'flex',
+                                                        alignItems: 'center', justifyContent: 'center',
+                                                        fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-primary)',
+                                                    }}>
+                                                        {(c.author || 'U')[0].toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <span style={{ fontWeight: 600, fontSize: '0.82rem', color: '#F3F4F6' }}>{c.author}</span>
+                                                        <span style={{ fontSize: '0.7rem', color: '#6B7280', marginLeft: 8 }}>{timeAgo(c.created_at)}</span>
+                                                        <p style={{ fontSize: '0.88rem', color: '#D1D5DB', marginTop: 3, lineHeight: 1.5 }}>{c.comment}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <span style={{ fontWeight: 600, fontSize: '0.82rem' }}>{c.author}</span>
-                                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginLeft: 8 }}>{timeAgo(c.created_at)}</span>
-                                                    <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: 2 }}>{c.comment}</p>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            ))
+                                        )}
+
+                                        {/* Comment Input */}
                                         <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                                             <input type="text" className="input-field" placeholder="Write a comment..."
                                                 value={newComment} onChange={e => setNewComment(e.target.value)}
                                                 onKeyDown={e => e.key === 'Enter' && addComment()}
                                                 style={{ flex: 1, margin: 0 }} />
-                                            <button className="btn btn-primary" onClick={addComment} style={{ padding: '8px 16px' }}>Reply</button>
+                                            <button className="btn btn-primary" onClick={addComment}
+                                                style={{ padding: '8px 16px' }} disabled={!newComment.trim()}>
+                                                Send
+                                            </button>
                                         </div>
                                     </div>
                                 )}
