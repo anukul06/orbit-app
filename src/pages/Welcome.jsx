@@ -51,7 +51,7 @@ export default function Welcome() {
                 gap: 64,
             }}>
                 {/* Left content */}
-                <div style={{ flex: 1, maxWidth: 640 }}>
+                <div style={{ flex: 1, maxWidth: 640, position: 'relative', zIndex: 2 }}>
                     <div className="animate-fade-in" style={{
                         display: 'inline-flex', alignItems: 'center', gap: 8,
                         padding: '6px 16px',
@@ -111,8 +111,11 @@ export default function Welcome() {
                 </div>
 
                 {/* Right side - Orbit Animation */}
-                <div className="animate-fade-in-right delay-300" style={{
-                    flex: '0 0 auto',
+                <div style={{
+                    flex: '0 0 420px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    zIndex: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                     <OrbitAnimation />

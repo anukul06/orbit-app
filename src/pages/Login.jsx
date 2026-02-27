@@ -14,9 +14,34 @@ export default function Login() {
         e.preventDefault();
         setError('');
 
-        if (!isLogin && password !== confirmPassword) {
-            setError('Passwords do not match');
+        // Validate required fields
+        if (!email.trim() || !password.trim()) {
+            setError('Email and Password are required.');
             return;
+        }
+
+        // Validate email format
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
+        // Validate password length
+        if (password.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+
+        // Signup: validate name and confirm password
+        if (!isLogin) {
+            if (!name.trim()) {
+                setError('Full Name is required.');
+                return;
+            }
+            if (password !== confirmPassword) {
+                setError('Passwords do not match.');
+                return;
+            }
         }
 
         if (isLogin) {
@@ -29,13 +54,13 @@ export default function Login() {
     return (
         <div style={{
             minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            position: 'relative', overflow: 'hidden'
+            position: 'relative', overflow: 'hidden',
+            background: 'var(--bg-primary)',
         }}>
+            {/* Lightweight background — no heavy orbs */}
             <div className="bg-grid" />
-            <div className="bg-gradient-orb bg-gradient-orb-1" />
-            <div className="bg-gradient-orb bg-gradient-orb-2" />
 
-            <div className="animate-scale-in" style={{
+            <div style={{
                 position: 'relative', zIndex: 1, width: '100%', maxWidth: 440,
             }}>
                 {/* Logo */}
@@ -53,7 +78,23 @@ export default function Login() {
                     border: '1px solid var(--border-accent)',
                     boxShadow: 'var(--shadow-glow)',
                 }}>
-                    <form onSubmit={handleSubmit}>
+                    {/* Global error message */}
+                    {error && (
+                        <div style={{
+                            padding: '10px 14px',
+                            background: 'rgba(255, 82, 82, 0.1)',
+                            border: '1px solid rgba(255, 82, 82, 0.2)',
+                            borderRadius: 'var(--radius-md)',
+                            color: 'var(--accent-danger)',
+                            fontSize: '0.85rem',
+                            fontWeight: 500,
+                            marginBottom: 20,
+                        }}>
+                            ⚠ {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} noValidate>
                         {!isLogin && (
                             <div style={{ marginBottom: 20 }}>
                                 <label className="input-label">Full Name</label>
@@ -62,8 +103,9 @@ export default function Login() {
                                     className="input-field"
                                     placeholder="Enter your full name"
                                     value={name}
-                                    onChange={e => setName(e.target.value)}
+                                    onChange={e => { setName(e.target.value); setError(''); }}
                                     id="name-input"
+                                    required
                                 />
                             </div>
                         )}
@@ -75,8 +117,9 @@ export default function Login() {
                                 className="input-field"
                                 placeholder="you@example.com"
                                 value={email}
-                                onChange={e => setEmail(e.target.value)}
+                                onChange={e => { setEmail(e.target.value); setError(''); }}
                                 id="email-input"
+                                required
                             />
                         </div>
 
@@ -87,8 +130,10 @@ export default function Login() {
                                 className="input-field"
                                 placeholder="Enter your password"
                                 value={password}
-                                onChange={e => setPassword(e.target.value)}
+                                onChange={e => { setPassword(e.target.value); setError(''); }}
                                 id="password-input"
+                                required
+                                minLength={6}
                             />
                         </div>
 
@@ -102,14 +147,8 @@ export default function Login() {
                                     value={confirmPassword}
                                     onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
                                     id="confirm-password-input"
-                                    style={error ? { borderColor: 'var(--accent-danger)' } : {}}
+                                    required
                                 />
-                                {error && (
-                                    <p style={{
-                                        color: 'var(--accent-danger)', fontSize: '0.82rem',
-                                        marginTop: 8, fontWeight: 500,
-                                    }}>⚠ {error}</p>
-                                )}
                             </div>
                         )}
 

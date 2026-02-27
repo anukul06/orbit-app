@@ -1,14 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Simulated user data (replace with backend fetch when connected)
 const user = {
-    name: '{{ user.name }}',
-    email: '{{ user.email }}',
-    college: '{{ user.college }}',
-    field: '{{ user.field }}',
-    substream: '{{ user.substream }}',
-    skillLevel: '{{ user.skill_level }}',
-    timePerDay: '{{ user.time_per_day }}',
+    name: 'Anukul Sangwan',
+    email: 'anukul@example.com',
+    college: 'XYZ University',
+    field: 'Computer Science',
+    substream: 'Artificial Intelligence',
+    skillLevel: 'Intermediate',
+    timePerDay: '3 hours',
     year: '3rd Year',
     degree: 'B.Tech',
     age: '21',
@@ -47,7 +48,7 @@ export default function Profile() {
                         fontSize: '1.8rem', fontWeight: 700, color: 'white',
                         fontFamily: 'var(--font-display)',
                     }}>
-                        {user.name.startsWith('{{') ? 'U' : user.name.charAt(0).toUpperCase()}
+                        {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
                         <h3 style={{ marginBottom: 4 }}>{user.name}</h3>
