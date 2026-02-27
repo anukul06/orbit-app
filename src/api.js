@@ -38,6 +38,7 @@ export const api = {
     // Roadmap
     getRoadmap: () => request('/roadmap/'),
     getRoadmapProgress: () => request('/roadmap/progress'),
+    toggleRoadmapDay: (itemId) => request(`/roadmap/toggle/${itemId}`, { method: 'POST' }),
 
     // Tasks
     getTasks: () => request('/tasks/'),
