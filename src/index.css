@@ -12,13 +12,13 @@
 }
 
 :root {
-  /* Core palette */
-  --bg-primary: #06080f;
+  /* Core palette — dark mode defaults */
+  --bg-primary: #111827;
   --bg-secondary: #0d1117;
-  --bg-card: rgba(15, 20, 40, 0.7);
-  --bg-card-hover: rgba(25, 32, 65, 0.85);
-  --bg-glass: rgba(255, 255, 255, 0.03);
-  --bg-glass-hover: rgba(255, 255, 255, 0.06);
+  --bg-card: rgba(31, 41, 55, 0.85);
+  --bg-card-hover: rgba(42, 52, 65, 0.95);
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-hover: rgba(255, 255, 255, 0.08);
 
   /* Accent colors */
   --accent-primary: #6c63ff;
@@ -35,10 +35,10 @@
   --gradient-card: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(0, 212, 255, 0.05) 100%);
   --gradient-glow: radial-gradient(ellipse at center, rgba(108, 99, 255, 0.15) 0%, transparent 70%);
 
-  /* Text */
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0b0;
-  --text-muted: #5a6070;
+  /* Text — high contrast for dark mode */
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
   --text-accent: #6c63ff;
 
   /* Borders */
@@ -128,6 +128,78 @@
 
 [data-theme="light"] .bg-grid {
   opacity: 0.3;
+}
+
+/* ---------- Dark Mode Card Text Visibility ---------- */
+.glass-card h2,
+.glass-card h3,
+.glass-card h4,
+.glass-card strong {
+  color: #F9FAFB;
+}
+
+.glass-card p,
+.glass-card li {
+  color: #D1D5DB;
+}
+
+.section-title {
+  color: #F9FAFB;
+}
+
+/* Glass card hover — brighten text */
+.glass-card:hover h2,
+.glass-card:hover h3,
+.glass-card:hover h4,
+.glass-card:hover div,
+.glass-card:hover span,
+.glass-card:hover p {
+  color: #FFFFFF;
+}
+
+/* Navbar link visibility */
+.navbar-link {
+  color: #D1D5DB !important;
+}
+
+.navbar-link.active,
+.navbar-link:hover {
+  color: #FFFFFF !important;
+}
+
+/* Light theme overrides for above */
+[data-theme="light"] .glass-card h2,
+[data-theme="light"] .glass-card h3,
+[data-theme="light"] .glass-card h4,
+[data-theme="light"] .glass-card strong {
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .glass-card p,
+[data-theme="light"] .glass-card li {
+  color: #374151;
+}
+
+[data-theme="light"] .section-title {
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .glass-card:hover h2,
+[data-theme="light"] .glass-card:hover h3,
+[data-theme="light"] .glass-card:hover h4,
+[data-theme="light"] .glass-card:hover div,
+[data-theme="light"] .glass-card:hover span,
+[data-theme="light"] .glass-card:hover p {
+  color: #111827;
+}
+
+[data-theme="light"] .navbar-link {
+  color: #4a5068 !important;
+}
+
+[data-theme="light"] .navbar-link.active,
+[data-theme="light"] .navbar-link:hover {
+  color: #1a1a2e !important;
 }
 
 
