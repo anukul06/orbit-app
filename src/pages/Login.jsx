@@ -6,11 +6,24 @@ export default function Login() {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [name, setName] = useState('');
+    const [error, setError] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        navigate('/dashboard');
+        setError('');
+
+        if (!isLogin && password !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        if (isLogin) {
+            navigate('/dashboard');
+        } else {
+            navigate('/complete-profile');
+        }
     };
 
     return (
@@ -67,7 +80,7 @@ export default function Login() {
                             />
                         </div>
 
-                        <div style={{ marginBottom: 28 }}>
+                        <div style={{ marginBottom: !isLogin ? 20 : 28 }}>
                             <label className="input-label">Password</label>
                             <input
                                 type="password"
@@ -78,6 +91,27 @@ export default function Login() {
                                 id="password-input"
                             />
                         </div>
+
+                        {!isLogin && (
+                            <div style={{ marginBottom: 28 }}>
+                                <label className="input-label">Confirm Password</label>
+                                <input
+                                    type="password"
+                                    className="input-field"
+                                    placeholder="Re-enter your password"
+                                    value={confirmPassword}
+                                    onChange={e => { setConfirmPassword(e.target.value); setError(''); }}
+                                    id="confirm-password-input"
+                                    style={error ? { borderColor: 'var(--accent-danger)' } : {}}
+                                />
+                                {error && (
+                                    <p style={{
+                                        color: 'var(--accent-danger)', fontSize: '0.82rem',
+                                        marginTop: 8, fontWeight: 500,
+                                    }}>⚠ {error}</p>
+                                )}
+                            </div>
+                        )}
 
                         {isLogin && (
                             <div style={{
@@ -112,7 +146,7 @@ export default function Login() {
                     <div style={{ textAlign: 'center', fontSize: '0.95rem', color: 'var(--text-secondary)' }}>
                         {isLogin ? "Don't have an account? " : 'Already have an account? '}
                         <span
-                            onClick={() => setIsLogin(!isLogin)}
+                            onClick={() => { setIsLogin(!isLogin); setError(''); setConfirmPassword(''); }}
                             style={{ color: 'var(--accent-primary)', cursor: 'pointer', fontWeight: 600 }}
                             id="toggle-auth"
                         >
