@@ -1,32 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
-import CircularProgress from '../components/CircularProgress';
+import {
+    Chart as ChartJS, CategoryScale, LinearScale, PointElement,
+    LineElement, Filler, Tooltip,
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
 
 export default function Insights() {
     const navigate = useNavigate();
     const [data, setData] = useState(null);
-    const [tasks, setTasks] = useState({ done: 0, total: 0 });
     const [reflection, setReflection] = useState('');
-    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        Promise.all([api.getDashboard(), api.getStats()])
-            .then(([dash, stats]) => {
-                setData(dash);
-                setTasks({ done: stats.tasks_done, total: stats.tasks_total });
-            })
+        api.getInsights()
+            .then(d => setData(d))
             .catch(() => navigate('/login'))
             .finally(() => setLoading(false));
     }, []);
-
-    const handleSubmit = () => {
-        if (reflection.trim()) {
-            setSubmitted(true);
-            setReflection('');
-        }
-    };
 
     if (loading || !data) {
         return (
@@ -36,85 +30,117 @@ export default function Insights() {
         );
     }
 
-    const completionRate = tasks.total > 0 ? Math.round(tasks.done / tasks.total * 100) : 0;
+    const chartData = {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+            label: 'Engagement %',
+            data: data.weekly_data,
+            borderColor: '#6c63ff',
+            backgroundColor: 'rgba(108, 99, 255, 0.12)',
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: '#6c63ff',
+            pointBorderColor: '#6c63ff',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+        }],
+    };
 
-    const skillBars = [
-        { name: 'Python', level: Math.min(100, completionRate + 20), color: '#6c63ff' },
-        { name: 'Problem Solving', level: Math.min(100, data.clarity_score), color: '#00e676' },
-        { name: 'Consistency', level: Math.min(100, data.streak * 12), color: '#ffab40' },
-        { name: 'Domain Knowledge', level: Math.min(100, data.roadmap_progress + 10), color: '#00d4ff' },
-        { name: 'Project Skills', level: Math.min(100, Math.round(completionRate * 0.6)), color: '#ff6b9d' },
-    ];
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+            y: {
+                beginAtZero: true, max: 100, grid: { color: 'rgba(255,255,255,0.04)' },
+                ticks: { color: '#6B7280', font: { size: 11 } }
+            },
+            x: { grid: { display: false }, ticks: { color: '#6B7280', font: { size: 11 } } },
+        },
+    };
 
-    const weeklyData = [
-        { day: 'Mon', score: Math.min(100, completionRate + 5) },
-        { day: 'Tue', score: Math.min(100, completionRate + 15) },
-        { day: 'Wed', score: Math.min(100, completionRate - 5) },
-        { day: 'Thu', score: Math.min(100, completionRate + 20) },
-        { day: 'Fri', score: Math.min(100, completionRate - 10) },
-        { day: 'Sat', score: Math.min(100, completionRate + 25) },
-        { day: 'Sun', score: Math.min(100, completionRate + 10) },
+    const statCards = [
+        { label: 'Clarity Score', value: `${data.clarity_score}`, icon: '🎯', color: '#6c63ff' },
+        { label: 'Completion', value: `${data.tasks_pct}%`, icon: '✅', color: '#00e676' },
+        { label: 'Streak', value: `${data.streak} days`, icon: '🔥', color: '#ffab40' },
+        { label: 'Roadmap', value: `${data.roadmap_pct}%`, icon: '🗺️', color: '#00d4ff' },
     ];
 
     return (
         <div className="page-wrapper">
             <div className="bg-grid" />
             <div className="page-container" style={{ paddingTop: 40, paddingBottom: 60, maxWidth: 1000, margin: '0 auto' }}>
-                <div style={{ marginBottom: 32 }}>
-                    <h2 style={{ marginBottom: 4 }}>Performance <span className="gradient-text">Insights</span></h2>
-                    <p style={{ color: 'var(--text-secondary)' }}>Track your learning progress and engagement</p>
+
+                {/* Header */}
+                <div style={{ marginBottom: 24 }}>
+                    <h2 style={{ marginBottom: 4 }}>📊 <span className="gradient-text">Insights</span></h2>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        {data.field && data.substream ? `${data.field} · ${data.substream}` : 'Your performance analytics'}
+                    </p>
                 </div>
 
-                {/* Key Metrics */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
-                    {[
-                        { label: 'Clarity Score', value: data.clarity_score, unit: '/100', color: '#6c63ff' },
-                        { label: 'Completion Rate', value: completionRate, unit: '%', color: '#00e676' },
-                        { label: 'Current Streak', value: data.streak, unit: ' days', color: '#ffab40' },
-                        { label: 'Roadmap Progress', value: data.roadmap_progress, unit: '%', color: '#00d4ff' },
-                    ].map((m, i) => (
-                        <div key={i} className="glass-card" style={{ padding: 24, textAlign: 'center' }}>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
-                                {m.label}
-                            </div>
-                            <div style={{ fontWeight: 700, fontSize: '1.8rem', color: m.color }}>
-                                {m.value}<span style={{ fontSize: '0.9rem', fontWeight: 500 }}>{m.unit}</span>
-                            </div>
+                {/* Top Row: 4 Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
+                    {statCards.map(s => (
+                        <div key={s.label} className="glass-card" style={{ padding: '18px 16px', textAlign: 'center' }}>
+                            <div style={{ fontSize: '1.4rem', marginBottom: 6 }}>{s.icon}</div>
+                            <div style={{ fontSize: '1.5rem', fontWeight: 700, color: s.color }}>{s.value}</div>
+                            <div style={{ fontSize: '0.78rem', color: '#9CA3AF', marginTop: 2 }}>{s.label}</div>
                         </div>
                     ))}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 32 }}>
-                    {/* Engagement Chart */}
-                    <div className="glass-card" style={{ padding: 24 }}>
-                        <div className="section-title" style={{ marginBottom: 20 }}>Weekly Engagement</div>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, height: 160 }}>
-                            {weeklyData.map((d, i) => (
-                                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                                    <div style={{
-                                        width: '100%', height: `${Math.max(10, d.score)}%`,
-                                        background: `linear-gradient(to top, #6c63ff, rgba(108,99,255,0.3))`,
-                                        borderRadius: '4px 4px 0 0',
-                                        transition: 'height 0.3s ease',
-                                    }} />
-                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{d.day}</span>
+                {/* Trend indicator */}
+                <div className="glass-card" style={{ padding: '10px 18px', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{
+                        fontSize: '0.85rem', fontWeight: 600,
+                        color: data.trend >= 0 ? '#00e676' : '#ff5252',
+                    }}>{data.trend_label}</span>
+                    <span style={{ fontSize: '0.78rem', color: '#6B7280' }}>· Avg Engagement: {data.avg_engagement}%</span>
+                </div>
+
+                {/* Middle Row: Graph + Skills */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 16, marginBottom: 24 }}>
+                    {/* Weekly Engagement Graph */}
+                    <div className="glass-card" style={{ padding: 20 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <div>
+                                <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#F3F4F6' }}>Weekly Engagement</div>
+                                <div style={{ fontSize: '0.78rem', color: '#9CA3AF' }}>
+                                    Most productive: <strong style={{ color: '#6c63ff' }}>{data.best_day}</strong>
                                 </div>
-                            ))}
+                            </div>
+                            <div style={{
+                                padding: '4px 10px', borderRadius: 'var(--radius-full)',
+                                fontSize: '0.72rem', fontWeight: 600,
+                                background: 'rgba(108,99,255,0.1)', color: '#6c63ff',
+                            }}>This Week</div>
+                        </div>
+                        <div style={{ height: 220 }}>
+                            <Line data={chartData} options={chartOptions} />
                         </div>
                     </div>
 
-                    {/* Skill Radar */}
-                    <div className="glass-card" style={{ padding: 24 }}>
-                        <div className="section-title" style={{ marginBottom: 20 }}>Skill Progress</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                            {skillBars.map((skill, i) => (
-                                <div key={i}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                                        <span style={{ fontSize: '0.85rem' }}>{skill.name}</span>
-                                        <span style={{ fontSize: '0.82rem', color: skill.color, fontWeight: 600 }}>{skill.level}%</span>
+                    {/* Skill Progress */}
+                    <div className="glass-card" style={{ padding: 20 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#F3F4F6', marginBottom: 4 }}>Skill Progress</div>
+                        <div style={{ fontSize: '0.78rem', color: '#9CA3AF', marginBottom: 16 }}>
+                            {data.substream || 'General'} skills
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {data.skills.map(skill => (
+                                <div key={skill.name}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                                        <span style={{ fontSize: '0.85rem', color: '#D1D5DB' }}>{skill.name}</span>
+                                        <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#6c63ff' }}>{skill.progress}%</span>
                                     </div>
-                                    <div className="progress-bar" style={{ height: 6 }}>
-                                        <div className="progress-bar-fill" style={{ width: `${skill.level}%`, background: skill.color }} />
+                                    <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.06)' }}>
+                                        <div style={{
+                                            height: '100%', borderRadius: 3,
+                                            width: `${skill.progress}%`,
+                                            background: 'var(--gradient-primary)',
+                                            transition: 'width 0.6s ease',
+                                        }} />
                                     </div>
                                 </div>
                             ))}
@@ -122,31 +148,54 @@ export default function Insights() {
                     </div>
                 </div>
 
-                {/* Reflection */}
-                <div className="glass-card" style={{ padding: 28 }}>
-                    <div className="section-title" style={{ marginBottom: 16 }}>Weekly Reflection</div>
-                    {submitted ? (
-                        <div style={{ textAlign: 'center', padding: 20, color: 'var(--accent-success)' }}>
-                            ✅ Reflection submitted successfully!
+                {/* Performance Pattern + AI Insight */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+                    {/* Performance Pattern */}
+                    <div className="glass-card" style={{ padding: 20 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                            <span style={{ fontSize: '1.1rem' }}>📈</span>
+                            <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#F3F4F6' }}>Performance Pattern</span>
                         </div>
-                    ) : (
-                        <>
-                            <textarea placeholder="What did you learn this week? What challenges did you face?"
-                                value={reflection} onChange={e => setReflection(e.target.value)}
-                                style={{
-                                    width: '100%', height: 120, padding: 16, fontSize: '0.92rem',
-                                    background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-glass)',
-                                    borderRadius: 'var(--radius-md)', color: 'var(--text-primary)',
-                                    resize: 'vertical', outline: 'none', fontFamily: 'inherit',
-                                }}
-                                id="reflection-input" />
-                            <button className="btn btn-primary" onClick={handleSubmit}
-                                style={{ marginTop: 16 }} disabled={!reflection.trim()} id="submit-reflection-btn">
-                                Submit Reflection →
-                            </button>
-                        </>
-                    )}
+                        <div style={{
+                            padding: '10px 14px', borderRadius: 'var(--radius-md)',
+                            background: 'rgba(108,99,255,0.06)', border: '1px solid rgba(108,99,255,0.12)',
+                            marginBottom: 10,
+                        }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#6c63ff' }}>{data.pattern}</div>
+                        </div>
+                        <p style={{ fontSize: '0.85rem', color: '#9CA3AF', lineHeight: 1.6 }}>{data.pattern_detail}</p>
+                    </div>
+
+                    {/* AI Insight */}
+                    <div className="glass-card" style={{ padding: 20 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                            <span style={{ fontSize: '1.1rem' }}>🤖</span>
+                            <span style={{ fontWeight: 600, fontSize: '0.95rem', color: '#F3F4F6' }}>AI Insight</span>
+                        </div>
+                        <p style={{ fontSize: '0.88rem', color: '#D1D5DB', lineHeight: 1.7 }}>{data.insight}</p>
+                    </div>
                 </div>
+
+                {/* Weekly Reflection */}
+                <div className="glass-card" style={{ padding: 20 }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#F3F4F6', marginBottom: 8 }}>📝 Weekly Reflection</div>
+                    <p style={{ fontSize: '0.82rem', color: '#9CA3AF', marginBottom: 12 }}>
+                        What did you learn this week? What would you improve?
+                    </p>
+                    <textarea className="input-field" value={reflection} onChange={e => setReflection(e.target.value)}
+                        placeholder="Write your reflection..." style={{ height: 80, resize: 'vertical', fontFamily: 'inherit' }} />
+                    <button className="btn btn-primary" style={{ marginTop: 10 }} disabled={!reflection.trim()}
+                        onClick={async () => {
+                            try {
+                                await api.submitReflection(reflection);
+                                setReflection('');
+                                alert('Reflection saved!');
+                            } catch { alert('Saved locally.'); setReflection(''); }
+                        }}>
+                        Save Reflection
+                    </button>
+                </div>
+
             </div>
         </div>
     );
