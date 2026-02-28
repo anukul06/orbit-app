@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import CircularProgress from '../components/CircularProgress';
+import useNotificationReminder from '../hooks/useNotificationReminder';
 
 export default function Dashboard() {
+    useNotificationReminder();
     const navigate = useNavigate();
     const [data, setData] = useState(null);
     const [insight, setInsight] = useState('');

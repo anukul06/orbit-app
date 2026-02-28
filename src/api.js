@@ -46,6 +46,7 @@ export const api = {
     updateTask: (id, data) => request(`/tasks/${id}`, { method: 'PUT', body: data }),
     deleteTask: (id) => request(`/tasks/${id}`, { method: 'DELETE' }),
     getStreak: () => request('/tasks/streak'),
+    getPendingTasks: () => request('/tasks/pending'),
 
     // Chat
     chat: (message) => request('/chat/', { method: 'POST', body: { message } }),

@@ -120,3 +120,17 @@ def get_streak():
     db.close()
 
     return jsonify({"streak": profile["streak"] if profile else 0}), 200
+
+
+@task_bp.route("/pending", methods=["GET"])
+def get_pending_tasks():
+    """Return count of incomplete tasks."""
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({"error": "Not authenticated"}), 401
+
+    db = get_db()
+    count = db.execute("SELECT COUNT(*) as c FROM Tasks WHERE user_id = ? AND completed = 0", (user_id,)).fetchone()["c"]
+    db.close()
+
+    return jsonify({"count": count}), 200

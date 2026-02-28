@@ -7,6 +7,7 @@ export default function Settings() {
     const [settings, setSettings] = useState({ dark_mode: 1, notifications_enabled: 1, weekly_summary: 0, skill_level: '', hours_per_day: 2, email: '' });
     const [saved, setSaved] = useState('');
     const [showDelete, setShowDelete] = useState(false);
+    const [reminderOn, setReminderOn] = useState(localStorage.getItem('orbit-reminders') !== 'false');
     const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm: '' });
     const [pwMsg, setPwMsg] = useState('');
 
@@ -26,6 +27,16 @@ export default function Settings() {
             setSaved('Settings saved ✅');
             setTimeout(() => setSaved(''), 2000);
         } catch { }
+    };
+
+    const toggleReminder = (val) => {
+        setReminderOn(val);
+        localStorage.setItem('orbit-reminders', val ? 'true' : 'false');
+        if (val && 'Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+        setSaved(val ? 'Daily reminders enabled 🔔' : 'Daily reminders disabled');
+        setTimeout(() => setSaved(''), 2000);
     };
 
     const changePassword = async () => {
@@ -88,6 +99,9 @@ export default function Settings() {
                     <Toggle label="Weekly Performance Summary" checked={!!settings.weekly_summary}
                         onChange={v => save({ weekly_summary: v ? 1 : 0 })}
                         desc="Receive weekly progress report" />
+                    <Toggle label="Daily Task Reminder" checked={reminderOn}
+                        onChange={toggleReminder}
+                        desc="Browser notification at 7 PM for pending tasks" />
                 </div>
 
                 {/* Learning Preferences */}
